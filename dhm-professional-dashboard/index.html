@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DHM Rain and Hazard Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="dashboard" data-rain="none">
+      <div class="map" id="map">
+        <div class="tiles" id="tiles"></div>
+        <div class="overlays">
+          <div class="zone flood-zone" data-hazard="flood" data-lat="27.5291" data-lng="84.3542">Flood area</div>
+          <div class="zone slide-zone" data-hazard="landslide" data-lat="28.2096" data-lng="83.9856">Landslide area</div>
+          <div class="route" id="routeLine"></div>
+          <div class="river-line" id="riverLine"></div>
+          <div class="city-pin" id="cityPin" hidden></div>
+          <div class="river-alert" data-hazard="flood" data-lat="27.6758" data-lng="85.4295">
+            <b>!</b><span>Hanumante Khola<br>Red alert</span>
+          </div>
+
+          <button class="station danger active" data-station="bhaktapur">82</button>
+          <button class="station heavy" data-station="nepalgunj">67</button>
+          <button class="station watch" data-station="pokhara">43</button>
+          <button class="station light" data-station="janakpur">24</button>
+          <button class="station light" data-station="biratnagar">19</button>
+          <button class="station clear" data-station="jumla">5</button>
+          <button class="station watch" data-station="dadeldhura">38</button>
+          <button class="station clear" data-station="kirtipur">7</button>
+          <button class="station light" data-station="dharan">28</button>
+          <button class="station heavy" data-station="simara">56</button>
+          <button class="station heavy" data-station="dhangadhi">74</button>
+          <button class="station heavy" data-station="butwal">62</button>
+          <button class="station heavy" data-station="chitwan">71</button>
+          <button class="station heavy" data-station="ilam">52</button>
+          <button class="station watch" data-station="hetauda">48</button>
+          <button class="station watch" data-station="taplejung">35</button>
+
+          <button class="hazard flood" data-hazard="flood" data-lat="27.6716" data-lng="85.4256" title="Flood risk">~</button>
+          <button class="hazard landslide" data-hazard="landslide" data-lat="28.2096" data-lng="83.9856" title="Landslide risk">!</button>
+          <button class="hazard fire" data-hazard="fire" data-lat="27.1595" data-lng="84.9801" title="Forest fire">F</button>
+          <button class="hazard quake" data-hazard="earthquake" data-lat="29.2747" data-lng="82.1838" title="Earthquake">M</button>
+          <button class="hazard shelter" data-hazard="shelter" data-lat="26.736" data-lng="85.919" title="Shelter">S</button>
+          <button class="hazard alert" data-hazard="publicAlerts" data-lat="27.7172" data-lng="85.324" title="Public alert">!</button>
+          <button class="hazard storm" data-hazard="thunderstorm" data-lat="27.4284" data-lng="85.0322" title="Thunderstorm">T</button>
+          <button class="hazard heavy-rain" data-hazard="heavyRain" data-lat="27.7006" data-lng="83.4484" title="Heavy rain">R</button>
+        </div>
+        <div class="rain" aria-hidden="true">
+          <i style="--x:4%;--d:.1s"></i><i style="--x:11%;--d:.5s"></i><i style="--x:18%;--d:.2s"></i>
+          <i style="--x:25%;--d:.7s"></i><i style="--x:32%;--d:.15s"></i><i style="--x:39%;--d:.45s"></i>
+          <i style="--x:47%;--d:.3s"></i><i style="--x:55%;--d:.75s"></i><i style="--x:63%;--d:.25s"></i>
+          <i style="--x:71%;--d:.6s"></i><i style="--x:80%;--d:.05s"></i><i style="--x:89%;--d:.4s"></i>
+          <i style="--x:97%;--d:.8s"></i>
+          <i style="--x:8%;--d:.95s"></i><i style="--x:15%;--d:.32s"></i><i style="--x:22%;--d:.88s"></i>
+          <i style="--x:29%;--d:.56s"></i><i style="--x:36%;--d:.99s"></i><i style="--x:43%;--d:.62s"></i>
+          <i style="--x:51%;--d:.91s"></i><i style="--x:59%;--d:.38s"></i><i style="--x:67%;--d:.82s"></i>
+          <i style="--x:75%;--d:.28s"></i><i style="--x:84%;--d:.68s"></i><i style="--x:93%;--d:.18s"></i>
+        </div>
+      </div>
+
+      <header class="topbar" hidden>
+        <div>
+          <b>DHM Rain and Hazard Dashboard</b>
+          <span>GalliMaps basemap | DHM weather, hazard and route intelligence</span>
+        </div>
+        <form class="place-search" id="placeSearch">
+          <input id="placeQuery" type="search" placeholder="Search place or ward">
+          <button type="submit">Search</button>
+          <div class="search-results" id="searchResults" hidden></div>
+        </form>
+        <strong>Today 15:00</strong>
+      </header>
+
+      <button class="weather-pill" id="weatherPill" hidden><span></span><b>26 C</b></button>
+      <section class="weather-card" id="weatherCard">
+        <div class="panel-title"><span>Weather near you</span><button id="closeWeather">Close</button></div>
+        <div class="simple-weather">
+          <article><b>Today</b><span>Rain likely after evening. Temperature 26 C.</span></article>
+          <article><b>Tomorrow</b><span>Cloudy morning, light rain later. Temperature 28 C.</span></article>
+          <article><b>Air</b><span>Moderate. Sensitive people should reduce long outdoor activity.</span></article>
+        </div>
+      </section>
+
+      <aside class="left-panel" hidden>
+        <div class="panel-title"><span id="selectionType">Selected station</span><b id="riskText">High</b></div>
+        <div class="metrics">
+          <article><span>Rain</span><b id="rainText">82 mm</b><small id="rainMode">Heavy rain</small></article>
+          <article><span>Air</span><b id="airText">Moderate</b><small>Simple public wording</small></article>
+          <article><span>River</span><b>Rising</b><small>Watch low roads</small></article>
+          <article><span>Shelters</span><b>28</b><small>19 ready</small></article>
+        </div>
+        <div class="station-card">
+          <span id="stationName">Bhaktapur Station</span>
+          <b id="stationStatus">Heavy rain</b>
+          <p id="stationDetail">Heavy rain is falling. Avoid low roads near the river.</p>
+          <div class="actions">
+            <button id="rainToggle" class="primary">Heavy rain</button>
+            <button id="routeToggle">Show safe route</button>
+          </div>
+          <small id="routeStatus">Safe route uses GalliMaps routing API.</small>
+        </div>
+      </aside>
+
+      <aside class="layer-panel" hidden>
+        <div class="panel-title"><span>Map menu</span><b>Hazard map</b></div>
+        <div class="weather-switch">
+          <button class="active" id="weatherView" type="button">Weather</button>
+          <button id="airView" type="button">Air quality</button>
+        </div>
+        <button class="layer" data-layer="hazards">All hazards</button>
+        <div class="hazard-options">
+          <button class="layer" data-layer="flood">Flood</button>
+          <button class="layer" data-layer="landslide">Landslide</button>
+          <button class="layer" data-layer="fire">Fire</button>
+          <button class="layer" data-layer="earthquake">Quake</button>
+          <button class="layer" data-layer="thunderstorm">Storm</button>
+          <button class="layer" data-layer="heavyRain">Heavy rain</button>
+          <button class="layer" data-layer="shelter">Shelter</button>
+        </div>
+        <button class="layer" data-layer="rain">Rain stations</button>
+        <button class="layer" data-layer="publicAlerts">Public alerts</button>
+        <button class="layer" id="predictionToggle">Rainfall prediction</button>
+        <div class="api-note" id="apiNote">Search, route, distance and reverse geocoding use GalliMaps APIs.</div>
+      </aside>
+
+      <aside class="prediction-panel collapsed" id="predictionPanel">
+        <div class="panel-title"><span>Rainfall prediction</span><b id="predictionMonth">July</b></div>
+        <img id="predictionMap" src="assets/predicted-rainfall-july.png" alt="Predicted rainfall map">
+        <p id="predictionText">Darker blue means more rain. This helps DHM see where the month may be wetter.</p>
+        <div class="month-buttons">
+          <button class="active" data-month="july">July</button>
+          <button data-month="august">August</button>
+        </div>
+      </aside>
+
+      <section class="forecast-bar" hidden>
+        <div class="timeline">
+          <button class="active" data-forecast="now">Now</button>
+          <button data-forecast="3h">3h</button>
+          <button data-forecast="24h">24h</button>
+          <button data-forecast="7d">7d</button>
+        </div>
+        <div class="phone-forecast" id="forecastPanel">
+          <div><span>Now</span><b>Heavy rain</b><small>82 mm at selected station</small></div>
+          <div><span>Next hour</span><b>Still raining</b><small>Low roads may flood</small></div>
+          <div><span>Evening</span><b>Rain slowly weakens</b><small>Keep shelter ready</small></div>
+        </div>
+      </section>
+
+      <section class="feature-dock" aria-label="DHM GalliMaps features">
+        <button class="feature" data-feature="weather"><span>1</span><b>Live weather</b></button>
+        <button class="feature" data-feature="hazard"><span>2</span><b>Hazard map</b></button>
+        <button class="feature" data-feature="route"><span>3</span><b>Route weather</b></button>
+        <button class="feature" data-feature="trekking"><span>4</span><b>Trekking</b></button>
+        <button class="feature" data-feature="flood"><span>5</span><b>Flood alert</b></button>
+        <button class="feature" data-feature="alerts"><span>6</span><b>Public alerts</b></button>
+        <button class="feature" data-feature="city"><span>7</span><b>Smart city</b></button>
+      </section>
+
+      <div class="map-tools">
+        <button id="zoomIn">+</button><button id="zoomOut">-</button><button id="locate">Find</button><button id="reset">Reset</button>
+      </div>
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>
