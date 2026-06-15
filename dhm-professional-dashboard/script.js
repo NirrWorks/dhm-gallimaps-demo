@@ -10,7 +10,7 @@ const stations = {
   pokhara: { name: "Pokhara Station", lat: 28.2096, lng: 83.9856, rainMm: 43, air: "Good", status: "Rain watch", detail: "Steady rain. Watch small streams and steep slopes." },
   janakpur: { name: "Janakpur Station", lat: 26.7288, lng: 85.9263, rainMm: 24, air: "Moderate", status: "Light rain", detail: "Light rain. Roads are mostly open." },
   biratnagar: { name: "Biratnagar Station", lat: 26.4525, lng: 87.2718, rainMm: 19, air: "Moderate", status: "Light rain", detail: "Light drizzle. No major warning." },
-  jumla: { name: "Jumla Station", lat: 29.2747, lng: 82.1838, rainMm: 5, air: "Good", status: "No rain", detail: "No active rain lens for this station." },
+  jumla: { name: "Jumla Station", lat: 29.2747, lng: 82.1838, rainMm: 0, air: "Good", status: "No rain", detail: "No rainfall recorded at this station." },
   dadeldhura: { name: "Dadeldhura Station", lat: 29.2984, lng: 80.5806, rainMm: 38, air: "Good", status: "Rain watch", detail: "Moderate rain in far west hills." },
   kirtipur: { name: "Kirtipur Station", lat: 27.6788, lng: 85.2774, rainMm: 7, air: "Moderate", status: "No active rain", detail: "Rain is below the active lens level." },
   dharan: { name: "Dharan Station", lat: 26.8125, lng: 87.2835, rainMm: 28, air: "Good", status: "Light rain", detail: "Light rain in eastern hills." },
@@ -51,6 +51,13 @@ const stationToCity = {
   ilam: "dharan",
   taplejung: "dharan",
   jumla: "nepalgunj"
+};
+
+const stationPointOffsets = {
+  bhaktapur: { x: 14, y: -8 },
+  kirtipur: { x: -16, y: 12 },
+  dharan: { x: -10, y: -8 },
+  biratnagar: { x: 14, y: 10 }
 };
 
 const hazards = {
@@ -188,39 +195,54 @@ const forecasts = {
 
 const features = {
   weather: {
-    title: "Live weather layer",
-    text: "Real-time weather and air quality on the map for any location in Nepal.",
+    title: "Local weather",
+    text: "DHM station weather, shown where people actually are.",
     cards: [["Temperature", "26 C", "Kathmandu now"], ["Air quality", "Moderate", "Simple public wording"], ["Rain", "82 mm", "Station-based animation"], ["GalliMaps", "Search ready", "Place APIs connected"]]
   },
-  hazard: {
-    title: "Hazard map",
-    text: "Flood, landslide, forest fire, earthquake and shelter points are visible together by default, with single-layer controls when needed.",
-    cards: [["Flood", "Red alert", "Hanumante Khola"], ["Landslide", "Watch", "Wet slopes"], ["Fire", "Smoke", "Avoid exposure"], ["Shelter", "Open", "Nearest safe point"]]
+  rainfall: {
+    title: "Rainfall lens",
+    text: "Live DHM rainfall intensity overlaid on the map.",
+    cards: [["Very light", "Drizzle", "Low rainfall station"], ["Mid rain", "20-49 mm", "Moderate visual lens"], ["Heavy rain", "50+ mm", "Strong rain lens"], ["Prediction", "July/August", "Monthly maps"]]
+  },
+  prediction: {
+    title: "Rainfall prediction",
+    text: "Weekly rainfall forecast and next-month prediction maps for planning.",
+    cards: [["Weekly", "7 days", "Light to heavy rain areas"], ["Next month", "July/August", "Prepared rainfall maps"], ["Planning", "Province view", "Where rain may increase"], ["Public", "Simple colors", "Easy to explain"]]
   },
   route: {
-    title: "Route weather",
-    text: "Evacuation and travel routes can show rain, wind and hazard warnings along the journey.",
+    title: "Route alerts",
+    text: "Warn users before they enter heavy rain zones on their route.",
     cards: [["Route", "GalliMaps API", "Uses returned line"], ["Distance", "API ready", "Fallback in demo"], ["Rain chance", "60%", "Along route"], ["Wind", "10 km/h", "Simple summary"]]
   },
-  trekking: {
-    title: "Trekking weather",
-    text: "Mountain routes can show snow chance, low temperature and safe stops for trekkers.",
-    cards: [["Everest area", "-2 C", "Snow chance 20%"], ["Tomorrow", "-3 C", "Cloudy"], ["Trail", "Risk watch", "High altitude"], ["DHM value", "Safety", "Official guidance"]]
+  disaster: {
+    title: "Disaster alert",
+    text: "Flood, landslide, fire, earthquake, storm and heavy-rain warnings in one hazard map.",
+    cards: [["Flood", "River risk", "Low roads and river corridors"], ["Landslide", "Slope risk", "Wet hill roads"], ["Fire / quake", "Alert", "Nearby emergency updates"], ["Storm", "Weather warning", "Thunder and heavy rain"]]
   },
   flood: {
     title: "Flood alert map",
-    text: "River alerts can sit directly on the map so people understand which river reach is risky.",
-    cards: [["Hanumante", "Red", "Likely flood risk"], ["Narayani", "Watch", "Rising"], ["Koshi", "Alert", "Low roads"], ["Action", "Move early", "Use safe route"]]
+    text: "Curvy river-level warning map for major rivers and local streams.",
+    cards: [["Hanumante", "Red alert", "Urban river risk"], ["Karnali", "Warning", "Western river rising"], ["River line", "Curvy", "Real-world style path"], ["Action", "Click label", "View river details"]]
+  },
+  city: {
+    title: "Smart city",
+    text: "Province-level weather, river and alert summary for city and government dashboards.",
+    cards: [["Province map", "Clickable", "Tap province for details"], ["Weather", "Live", "Temperature and rainfall"], ["River", "Status", "Major river warnings"], ["Alerts", "Public", "Office-ready summary"]]
+  },
+  air: {
+    title: "Air quality",
+    text: "AQI station readings made simple for public decisions.",
+    cards: [["Kathmandu", "AQI 82", "Moderate"], ["Nepalgunj", "AQI 128", "Poor"], ["Pokhara", "AQI 48", "Good"], ["Action", "Reduce exposure", "For sensitive people"]]
   },
   alerts: {
     title: "School and public alerts",
     text: "DHM warnings can be pushed to schools, health posts, ward offices and the public.",
     cards: [["Schools", "Notify", "Heavy rain"], ["Health posts", "Notify", "Flood watch"], ["Ward offices", "Prepare", "Open shelter"], ["Public", "Share", "Short alert"]]
   },
-  city: {
-    title: "Smart city dashboard",
-    text: "City teams can combine weather, river levels, alerts and reports for daily operations.",
-    cards: [["Weather", "24 C", "Partly cloudy"], ["Rain 24h", "18 mm", "Moderate"], ["River", "Hanumante", "Red alert"], ["Reports", "Live", "Ward dashboard"]]
+  landslide: {
+    title: "Landslide risk",
+    text: "GIS hazard zones for hilly terrain, translated into simple route warnings.",
+    cards: [["Pokhara hills", "Watch", "Wet slope"], ["Route", "Avoid", "Steep segments"], ["Alert", "Predicted", "Rain-triggered"], ["Action", "Safe route", "Use GalliMaps routing"]]
   }
 };
 
@@ -231,6 +253,39 @@ const routeWeatherPoints = [
   { name: "Dhading", lat: 27.867, lng: 84.916, temp: "21 C", rain: "55%" },
   { name: "Kathmandu", lat: 27.7172, lng: 85.324, temp: "24 C", rain: "40%" }
 ];
+
+const routeCities = {
+  nepalgunj: { name: "Nepalgunj", lat: 28.05, lng: 81.62, temp: "31 C", weather: "Heavy rain", rain: 67 },
+  pokhara: { name: "Pokhara", lat: 28.2096, lng: 83.9856, temp: "26 C", weather: "Rain watch", rain: 43 },
+  kathmandu: { name: "Kathmandu", lat: 27.7172, lng: 85.324, temp: "24 C", weather: "Cloudy", rain: 18 },
+  butwal: { name: "Butwal", lat: 27.7006, lng: 83.4484, temp: "28 C", weather: "Heavy rain", rain: 62 },
+  chitwan: { name: "Chitwan", lat: 27.5291, lng: 84.3542, temp: "29 C", weather: "Flood watch", rain: 71 },
+  biratnagar: { name: "Biratnagar", lat: 26.4525, lng: 87.2718, temp: "27 C", weather: "Light drizzle", rain: 19 },
+  dhangadhi: { name: "Dhangadhi", lat: 28.7056, lng: 80.5754, temp: "30 C", weather: "Heavy rain", rain: 74 }
+};
+
+const routeCorridors = {
+  "nepalgunj-pokhara": [
+    { lat: 28.05, lng: 81.62 },
+    { lat: 27.84, lng: 82.25 },
+    { lat: 27.80, lng: 82.75 },
+    { lat: 27.70, lng: 83.12 },
+    { lat: 27.7006, lng: 83.4484 },
+    { lat: 27.89, lng: 83.67 },
+    { lat: 28.2096, lng: 83.9856 }
+  ],
+  "pokhara-nepalgunj": [
+    { lat: 28.2096, lng: 83.9856 },
+    { lat: 27.89, lng: 83.67 },
+    { lat: 27.7006, lng: 83.4484 },
+    { lat: 27.70, lng: 83.12 },
+    { lat: 27.80, lng: 82.75 },
+    { lat: 27.84, lng: 82.25 },
+    { lat: 28.05, lng: 81.62 }
+  ]
+};
+
+let activeRouteAlerts = [];
 
 const pokharaKathmanduRoute = [
   { lat: 28.2096, lng: 83.9856 },
@@ -249,11 +304,125 @@ const trekkingRoute = [
 ];
 
 const riverSegments = [
-  { level: "normal", from: { lat: 27.690, lng: 85.405 }, to: { lat: 27.682, lng: 85.418 } },
-  { level: "watch", from: { lat: 27.682, lng: 85.418 }, to: { lat: 27.676, lng: 85.429 } },
-  { level: "alert", from: { lat: 27.676, lng: 85.429 }, to: { lat: 27.669, lng: 85.442 } },
-  { level: "danger", from: { lat: 27.669, lng: 85.442 }, to: { lat: 27.662, lng: 85.456 } }
+  {
+    river: "Hanumante Khola",
+    levels: ["normal", "watch", "alert", "danger", "danger"],
+    points: [
+      { lat: 27.690, lng: 85.405 }, { lat: 27.686, lng: 85.413 }, { lat: 27.682, lng: 85.418 },
+      { lat: 27.676, lng: 85.429 }, { lat: 27.669, lng: 85.442 }, { lat: 27.662, lng: 85.456 }
+    ]
+  },
+  {
+    river: "Karnali River",
+    levels: ["normal", "watch", "alert", "watch", "normal"],
+    points: [
+      { lat: 28.95, lng: 81.10 }, { lat: 28.86, lng: 81.19 }, { lat: 28.78, lng: 81.16 },
+      { lat: 28.70, lng: 81.29 }, { lat: 28.62, lng: 81.25 }, { lat: 28.54, lng: 81.38 }
+    ]
+  }
 ];
+
+const riverAlerts = {
+  hanumante: {
+    title: "Hanumante Khola",
+    status: "Red alert",
+    detail: "Water level is very high near Bhaktapur. Avoid river roads and move early if water rises.",
+    rainValue: "Danger",
+    risk: "Red"
+  },
+  karnali: {
+    title: "Karnali River",
+    status: "Warning",
+    detail: "Karnali river level is rising in the west. Watch bridges, river banks and low settlements.",
+    rainValue: "Warning",
+    risk: "Orange"
+  }
+};
+
+const provinceStats = [
+  { name: "Koshi Province", temp: "27 C", rain: "52 mm", river: "Normal", alert: "Heat and rain watch", color: "#f97316" },
+  { name: "Madhesh Province", temp: "30 C", rain: "24 mm", river: "Watch", alert: "Thunderstorm possible", color: "#f59e0b" },
+  { name: "Bagmati Province", temp: "24 C", rain: "82 mm", river: "Hanumante red", alert: "Flood and heavy rain", color: "#dc2626" },
+  { name: "Gandaki Province", temp: "26 C", rain: "43 mm", river: "Normal", alert: "Landslide watch", color: "#a855f7" },
+  { name: "Lumbini Province", temp: "28 C", rain: "62 mm", river: "Tinau watch", alert: "Heavy rain", color: "#ef4444" },
+  { name: "Karnali Province", temp: "23 C", rain: "35 mm", river: "Karnali warning", alert: "River warning", color: "#0ea5e9" },
+  { name: "Sudurpashchim Province", temp: "30 C", rain: "74 mm", river: "Watch", alert: "Heavy rain", color: "#2563eb" }
+];
+
+const predictionFrames = {
+  fri12: [
+    { lat: 28.72, lng: 80.72, level: "mid", w: 130, h: 74 },
+    { lat: 28.28, lng: 83.76, level: "low", w: 118, h: 66 },
+    { lat: 27.62, lng: 85.30, level: "mid", w: 142, h: 78 },
+    { lat: 26.78, lng: 86.72, level: "low", w: 120, h: 68 }
+  ],
+  sat13: [
+    { lat: 28.42, lng: 81.15, level: "low", w: 120, h: 66 },
+    { lat: 27.82, lng: 83.45, level: "mid", w: 156, h: 86 },
+    { lat: 27.36, lng: 85.02, level: "high", w: 138, h: 76 },
+    { lat: 26.92, lng: 87.42, level: "mid", w: 148, h: 82 }
+  ],
+  sun14: [
+    { lat: 28.65, lng: 80.85, level: "low", w: 124, h: 70 },
+    { lat: 27.78, lng: 82.95, level: "mid", w: 160, h: 88 },
+    { lat: 27.72, lng: 85.32, level: "high", w: 142, h: 78 },
+    { lat: 26.75, lng: 86.95, level: "mid", w: 150, h: 84 },
+    { lat: 27.18, lng: 87.74, level: "low", w: 114, h: 64 }
+  ],
+  mon15: [
+    { lat: 28.20, lng: 83.98, level: "high", w: 145, h: 80 },
+    { lat: 27.53, lng: 84.35, level: "mid", w: 150, h: 84 },
+    { lat: 26.45, lng: 87.27, level: "low", w: 116, h: 66 },
+    { lat: 29.05, lng: 82.10, level: "low", w: 112, h: 64 }
+  ],
+  tue16: [
+    { lat: 28.70, lng: 80.57, level: "high", w: 150, h: 84 },
+    { lat: 27.70, lng: 83.45, level: "mid", w: 148, h: 82 },
+    { lat: 27.67, lng: 85.43, level: "mid", w: 138, h: 76 },
+    { lat: 26.91, lng: 87.92, level: "low", w: 110, h: 62 }
+  ],
+  wed17: [
+    { lat: 28.05, lng: 81.62, level: "mid", w: 150, h: 84 },
+    { lat: 27.70, lng: 83.45, level: "high", w: 150, h: 84 },
+    { lat: 27.43, lng: 85.03, level: "mid", w: 140, h: 78 },
+    { lat: 27.35, lng: 87.67, level: "mid", w: 132, h: 74 }
+  ],
+  thu18: [
+    { lat: 29.30, lng: 80.58, level: "low", w: 110, h: 62 },
+    { lat: 28.21, lng: 83.98, level: "mid", w: 142, h: 78 },
+    { lat: 27.67, lng: 85.43, level: "high", w: 150, h: 84 },
+    { lat: 26.81, lng: 87.28, level: "mid", w: 136, h: 76 }
+  ],
+  fri19: [
+    { lat: 28.70, lng: 80.57, level: "high", w: 150, h: 86 },
+    { lat: 27.53, lng: 84.35, level: "high", w: 152, h: 86 },
+    { lat: 26.73, lng: 85.93, level: "mid", w: 142, h: 78 },
+    { lat: 26.91, lng: 87.92, level: "mid", w: 136, h: 76 }
+  ]
+};
+
+const forecastMarkers = {
+  now: [
+    { lat: 27.7172, lng: 85.324, city: "Kathmandu", type: "cloud", text: "24 C" },
+    { lat: 28.2096, lng: 83.9856, city: "Pokhara", type: "rain", text: "26 C" },
+    { lat: 26.4525, lng: 87.2718, city: "Biratnagar", type: "cloud", text: "27 C" }
+  ],
+  "3h": [
+    { lat: 27.7172, lng: 85.324, city: "Kathmandu", type: "rain", text: "60%" },
+    { lat: 27.7006, lng: 83.4484, city: "Butwal", type: "heavy", text: "70%" },
+    { lat: 28.05, lng: 81.62, city: "Nepalgunj", type: "heavy", text: "75%" }
+  ],
+  "24h": [
+    { lat: 28.7056, lng: 80.5754, city: "Far west", type: "heavy", text: "High" },
+    { lat: 27.5291, lng: 84.3542, city: "Chitwan", type: "rain", text: "Likely" },
+    { lat: 26.9116, lng: 87.9237, city: "East hills", type: "rain", text: "Watch" }
+  ],
+  "7d": [
+    { lat: 28.7056, lng: 80.5754, city: "Far west", type: "heavy", text: "More rain" },
+    { lat: 27.7, lng: 83.4, city: "Lumbini", type: "rain", text: "Wet" },
+    { lat: 26.9, lng: 87.7, city: "East", type: "rain", text: "Wet" }
+  ]
+};
 
 const fallbackRoute = [
   { lat: 27.6716, lng: 85.4256 },
@@ -271,20 +440,35 @@ const layerPanel = document.querySelector(".layer-panel");
 const forecastBar = document.querySelector(".forecast-bar");
 const route = document.querySelector("#routeLine");
 const riverLine = document.querySelector("#riverLine");
+const provinceLayer = document.querySelector("#provinceLayer");
+const smartDetailPanel = document.querySelector("#smartDetailPanel");
+const predictionMapUi = document.querySelector("#predictionMapUi");
+const predictionRainOverlay = document.querySelector("#predictionRainOverlay");
+const heatmapDemoPanel = document.querySelector("#heatmapDemoPanel");
 const routeStatus = document.querySelector("#routeStatus");
+const routeSearchCard = document.querySelector("#routeSearchCard");
+const routeSearchStatus = document.querySelector("#routeSearchStatus");
+const routeFrom = document.querySelector("#routeFrom");
+const routeTo = document.querySelector("#routeTo");
 const stationButtons = document.querySelectorAll(".station");
 const layerButtons = document.querySelectorAll(".layer");
 const hazardButtons = document.querySelectorAll("[data-hazard]");
 const featureButtons = document.querySelectorAll(".feature");
+const predictionViewButtons = document.querySelectorAll("[data-prediction-view]");
 const hazardLayerNames = ["flood", "landslide", "fire", "earthquake", "shelter", "publicAlerts", "thunderstorm", "heavyRain"];
 let activeStation = "bhaktapur";
 let activeSelection = { type: "station", id: "bhaktapur" };
 let activeFeature = "map";
 let weatherDisplay = "weather";
+let localWeatherLayer = "weather";
 let rainOverride = null;
 let routeActive = false;
 let riverActive = false;
 let routePoints = fallbackRoute;
+let provinceData = null;
+let provinceLoading = false;
+let activePredictionDay = "sun14";
+let activePredictionTime = "20:45";
 const layers = new Set();
 const state = { centerLat: 28.15, centerLng: 84.25, z: 7, dragging: false, startX: 0, startY: 0, origin: null };
 
@@ -304,7 +488,11 @@ function centerPixel() { return llp(state.centerLat, state.centerLng, state.z); 
 function setCenter(p) { const c = pll(p.x, p.y, state.z); state.centerLat = clamp(c.lat, -85, 85); state.centerLng = c.lng; }
 function topLeft(rect) { const c = centerPixel(); return { x: c.x - rect.width / 2, y: c.y - rect.height / 2 }; }
 function tileUrl(z, x, y) { return TILE_URL.replace("{z}", z).replace("{x}", x).replace("{y}", y); }
-function place(el, lat, lng, tl) { const p = llp(lat, lng, state.z); el.style.left = `${p.x - tl.x}px`; el.style.top = `${p.y - tl.y}px`; }
+function place(el, lat, lng, tl, offset = { x: 0, y: 0 }) {
+  const p = llp(lat, lng, state.z);
+  el.style.left = `${p.x - tl.x + offset.x}px`;
+  el.style.top = `${p.y - tl.y + offset.y}px`;
+}
 function selectedOrigin() {
   return activeSelection.type === "hazard" ? hazards[activeSelection.id] : stations[activeStation];
 }
@@ -353,23 +541,135 @@ function renderRoute(tl) {
 function renderRiver(tl) {
   riverLine.replaceChildren();
   riverSegments.forEach(segmentData => {
-    const a = llp(segmentData.from.lat, segmentData.from.lng, state.z), b = llp(segmentData.to.lat, segmentData.to.lng, state.z);
-    const x1 = a.x - tl.x, y1 = a.y - tl.y, x2 = b.x - tl.x, y2 = b.y - tl.y;
-    const segment = document.createElement("i");
-    segment.className = segmentData.level;
-    segment.style.left = `${x1}px`; segment.style.top = `${y1}px`; segment.style.width = `${Math.hypot(x2 - x1, y2 - y1)}px`;
-    segment.style.transform = `rotate(${Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI}deg)`;
-    riverLine.appendChild(segment);
+    segmentData.points.slice(0, -1).forEach((point, index) => {
+      const next = segmentData.points[index + 1], a = llp(point.lat, point.lng, state.z), b = llp(next.lat, next.lng, state.z);
+      const x1 = a.x - tl.x, y1 = a.y - tl.y, x2 = b.x - tl.x, y2 = b.y - tl.y;
+      const segment = document.createElement("i");
+      const level = segmentData.levels?.[index] || segmentData.level || "normal";
+      segment.className = `${level} river-${segmentData.river.toLowerCase().replace(/[^a-z]+/g, "-")}`;
+      segment.style.left = `${x1}px`; segment.style.top = `${y1}px`; segment.style.width = `${Math.hypot(x2 - x1, y2 - y1)}px`;
+      segment.style.transform = `rotate(${Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI}deg)`;
+      riverLine.appendChild(segment);
+    });
+  });
+}
+
+function provinceName(feature, index) {
+  const p = feature.properties || {};
+  return p.name || p.province || p.ADM1_EN || p.Province || provinceStats[index]?.name || `Province ${index + 1}`;
+}
+
+function ringPath(ring, tl) {
+  const step = Math.max(1, Math.ceil(ring.length / 36));
+  return ring.filter((_, index) => index % step === 0 || index === ring.length - 1).map((pair, index) => {
+    const p = llp(pair[1], pair[0], state.z);
+    return `${index ? "L" : "M"}${(p.x - tl.x).toFixed(1)} ${(p.y - tl.y).toFixed(1)}`;
+  }).join(" ") + " Z";
+}
+
+function ringArea(ring) {
+  let area = 0;
+  for (let i = 0; i < ring.length - 1; i += 1) area += (ring[i][0] * ring[i + 1][1]) - (ring[i + 1][0] * ring[i][1]);
+  return Math.abs(area);
+}
+
+function featurePath(feature, tl) {
+  const geom = feature.geometry;
+  if (!geom) return "";
+  const polys = geom.type === "Polygon" ? [geom.coordinates] : geom.coordinates;
+  const rings = polys.map(poly => poly[0]).filter(Boolean);
+  const largest = rings.sort((a, b) => ringArea(b) - ringArea(a))[0];
+  return largest ? ringPath(largest, tl) : "";
+}
+
+function renderProvinceMap(tl, rect) {
+  provinceLayer.replaceChildren();
+  provinceLayer.setAttribute("viewBox", `0 0 ${rect.width} ${rect.height}`);
+  provinceLayer.setAttribute("width", rect.width);
+  provinceLayer.setAttribute("height", rect.height);
+  provinceLayer.classList.toggle("active", activeFeature === "city");
+  if (activeFeature !== "city" || !provinceData) return;
+  const frag = document.createDocumentFragment();
+  provinceData.features.forEach((feature, index) => {
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    const stat = provinceStats[index % provinceStats.length];
+    path.setAttribute("d", featurePath(feature, tl));
+    path.setAttribute("fill", stat.color);
+    path.setAttribute("data-province", index);
+    path.setAttribute("tabindex", "0");
+    frag.appendChild(path);
+  });
+  provinceLayer.appendChild(frag);
+}
+
+function renderForecastMarkers(key = "now") {
+  document.querySelectorAll(".forecast-marker").forEach(el => el.remove());
+  if (activeFeature !== "weather" || activeSelection.type !== "station" || localWeatherLayer === "rain") return;
+  const frag = document.createDocumentFragment();
+  (forecastMarkers[key] || forecastMarkers.now).forEach(item => {
+    const marker = document.createElement("div");
+    marker.className = `forecast-marker ${item.type}`;
+    marker.dataset.lat = item.lat;
+    marker.dataset.lng = item.lng;
+    marker.innerHTML = `<b>${item.city}</b><small>${item.text}</small>`;
+    frag.appendChild(marker);
+  });
+  document.querySelector(".overlays").appendChild(frag);
+}
+
+function renderRouteAlerts(tl) {
+  document.querySelectorAll(".route-alert-marker").forEach(el => el.remove());
+  if (activeFeature !== "route" || !routeActive) return;
+  const frag = document.createDocumentFragment();
+  activeRouteAlerts.forEach(item => {
+    const marker = document.createElement("button");
+    marker.type = "button";
+    marker.className = `route-alert-marker ${item.level} ${item.position || "above"}`;
+    marker.dataset.lat = item.lat;
+    marker.dataset.lng = item.lng;
+    marker.innerHTML = `<b>${item.icon}</b><span>${item.title}</span>`;
+    marker.addEventListener("click", () => showRouteAlert(item));
+    place(marker, item.lat, item.lng, tl);
+    frag.appendChild(marker);
+  });
+  document.querySelector(".overlays").appendChild(frag);
+}
+
+function renderPredictionRain(tl) {
+  const patches = document.querySelectorAll("[data-pred-rain]");
+  const frame = predictionFrames[activePredictionDay] || predictionFrames.sun14;
+  patches.forEach((patch, index) => {
+    const item = frame[index];
+    if (!item || activeFeature !== "prediction") {
+      patch.hidden = true;
+      return;
+    }
+    const p = llp(item.lat, item.lng, state.z);
+    const scale = clamp((state.z - 6) * 0.18 + 0.82, 0.8, 1.45);
+    patch.hidden = false;
+    patch.className = `rain-patch ${item.level}`;
+    patch.style.left = `${p.x - tl.x}px`;
+    patch.style.top = `${p.y - tl.y}px`;
+    patch.style.setProperty("--w", `${Math.round(clamp(item.w * scale, 72, 116))}px`);
+    patch.style.setProperty("--h", `${Math.round(clamp(item.h * scale, 40, 68))}px`);
   });
 }
 
 function render() {
   const rect = map.getBoundingClientRect(), tl = topLeft(rect);
   renderTiles(rect, tl);
+  renderForecastMarkers(document.querySelector(".timeline .active")?.dataset.forecast || "now");
   document.querySelectorAll("[data-lat][data-lng]").forEach(el => place(el, +el.dataset.lat, +el.dataset.lng, tl));
-  stationButtons.forEach(btn => { const s = stations[btn.dataset.station]; place(btn, s.lat, s.lng, tl); });
+  stationButtons.forEach(btn => {
+    const s = stations[btn.dataset.station];
+    const offset = activeFeature === "weather" && localWeatherLayer === "rain" ? stationPointOffsets[btn.dataset.station] : null;
+    place(btn, s.lat, s.lng, tl, offset || { x: 0, y: 0 });
+  });
   renderRoute(tl);
   renderRiver(tl);
+  renderRouteAlerts(tl);
+  renderProvinceMap(tl, rect);
+  renderPredictionRain(tl);
 }
 
 function screenLL(cx, cy, z = state.z) {
@@ -388,14 +688,16 @@ function zoom(d, cx, cy) {
 
 function setStation(id) {
   leftPanel.hidden = false;
-  forecastBar.hidden = false;
   activeStation = id;
   activeSelection = { type: "station", id };
+  rainOverride = null;
   const s = stations[id], mode = rainMode(s.rainMm);
   const city = cityWeather[stationToCity[id]] || cityWeather.kathmandu;
+  const cityMode = activeFeature === "weather" && localWeatherLayer !== "rain";
+  forecastBar.hidden = !cityMode;
   document.querySelector("#selectionType").textContent = "Selected station";
   document.querySelector("#rainText").previousElementSibling.textContent = "Rain";
-  if (activeFeature === "weather") {
+  if (cityMode) {
     document.querySelector("#stationName").textContent = city.name;
     document.querySelector("#stationStatus").textContent = `${city.temp} C, ${city.condition}`;
     document.querySelector("#stationDetail").textContent = weatherDisplay === "air" ? `Air quality is ${city.air}. AQI ${city.aqi}. Sensitive people should reduce long outdoor activity if needed.` : `Today in ${city.name}: ${city.forecast.map(item => `${item[0]} ${item[1]}`).join(", ")}.`;
@@ -405,7 +707,7 @@ function setStation(id) {
   } else {
     document.querySelector("#stationName").textContent = s.name;
     document.querySelector("#stationStatus").textContent = s.status;
-    document.querySelector("#stationDetail").textContent = s.detail;
+    document.querySelector("#stationDetail").textContent = `${s.detail} Accumulated rainfall: ${s.rainMm} mm.`;
     document.querySelector("#rainText").textContent = `${s.rainMm} mm`;
     document.querySelector("#airText").textContent = s.air;
     document.querySelector("#riskText").textContent = riskWord(s.rainMm);
@@ -441,9 +743,137 @@ function setHazardInfo(type) {
   routeStatus.textContent = "Route will start from this selected hazard.";
 }
 
+function setRiverInfo(id) {
+  const info = riverAlerts[id];
+  if (!info) return;
+  leftPanel.hidden = false;
+  forecastBar.hidden = true;
+  activeSelection = { type: "river", id };
+  document.querySelector("#selectionType").textContent = "River alert";
+  document.querySelector("#stationName").textContent = info.title;
+  document.querySelector("#stationStatus").textContent = info.status;
+  document.querySelector("#stationDetail").textContent = info.detail;
+  document.querySelector("#rainText").previousElementSibling.textContent = "River";
+  document.querySelector("#rainText").textContent = info.rainValue;
+  document.querySelector("#airText").textContent = "Normal";
+  document.querySelector("#riskText").textContent = info.risk;
+  document.querySelector("#rainMode").textContent = "Flood alert map";
+  document.querySelector("#rainToggle").textContent = "River alert";
+  document.querySelector("#rainToggle").disabled = true;
+  document.querySelector("#routeToggle").hidden = true;
+  routeStatus.textContent = "River warning is shown on the flood alert map.";
+}
+
+function provinceDetails(stat, name) {
+  const alertLevel = stat.river.toLowerCase().includes("red") || stat.alert.toLowerCase().includes("heavy") ? "High" : stat.river.toLowerCase().includes("watch") || stat.river.toLowerCase().includes("warning") ? "Watch" : "Normal";
+  return {
+    name: name || stat.name,
+    condition: stat.rain.replace(" mm", "") > 60 ? "Rainy" : stat.rain.replace(" mm", "") > 35 ? "Cloudy with rain" : "Partly cloudy",
+    headline: alertLevel === "High" ? "Heavy rain pockets this week" : alertLevel === "Watch" ? "Rain watch for selected districts" : "Mostly normal weather this week",
+    summary: `${stat.name} has ${stat.temp} now, ${stat.rain} recent rainfall and river status ${stat.river}. Suggested action: keep ward offices, schools and health posts informed with simple local messages.`,
+    rows: [
+      ["Weather", `${stat.temp}, ${stat.alert}`, "Public map can show this as a clear province card."],
+      ["Rainfall", `${stat.rain} observed`, "Use DHM rain stations and forecast maps for local planning."],
+      ["River level", stat.river, "Highlight only river sections that need watch or warning."],
+      ["Public service", alertLevel === "High" ? "Send alert" : "Monitor", "Prepare schools, health posts and ward offices before conditions worsen."]
+    ]
+  };
+}
+
+function hideSmartDetail() {
+  if (smartDetailPanel) smartDetailPanel.hidden = true;
+}
+
+function showProvinceInfo(index, fallbackName) {
+  const stat = provinceStats[index % provinceStats.length];
+  const detail = provinceDetails(stat, fallbackName);
+  leftPanel.hidden = true;
+  forecastBar.hidden = true;
+  if (smartDetailPanel) {
+    smartDetailPanel.hidden = false;
+    document.querySelector("#smartProvinceTitle").textContent = detail.name;
+    document.querySelector("#smartCondition").textContent = detail.condition;
+    document.querySelector("#smartTemp").textContent = stat.temp;
+    document.querySelector("#smartRain").textContent = `Rainfall: ${stat.rain}`;
+    document.querySelector("#smartHeadline").textContent = detail.headline;
+    document.querySelector("#smartSummary").textContent = detail.summary;
+    document.querySelector("#smartToday").textContent = stat.alert;
+    document.querySelector("#smartTodayNote").textContent = `River: ${stat.river}`;
+    document.querySelector("#smartTomorrow").textContent = stat.rain.replace(" mm", "") > 50 ? "More rain" : "Cloudy";
+    document.querySelector("#smartWeek").textContent = stat.river.toLowerCase().includes("red") ? "Flood watch" : "Province watch";
+    document.querySelector("#smartTable").innerHTML = detail.rows.map(row => `<article><b>${row[0]}</b><span>${row[1]}</span><small>${row[2]}</small></article>`).join("");
+  }
+  activeSelection = { type: "province", id: index };
+  document.querySelector("#selectionType").textContent = "Smart city";
+  document.querySelector("#stationName").textContent = stat.name || fallbackName;
+  document.querySelector("#stationStatus").textContent = stat.alert;
+  document.querySelector("#stationDetail").textContent = `Current weather ${stat.temp}. Rainfall forecast ${stat.rain}. River status: ${stat.river}. Public message: prepare local offices, schools and health posts if alert level rises.`;
+  document.querySelector("#rainText").previousElementSibling.textContent = "Rain";
+  document.querySelector("#rainText").textContent = stat.rain;
+  document.querySelector("#airText").textContent = stat.temp;
+  document.querySelector("#riskText").textContent = stat.river.includes("red") || stat.river.includes("warning") ? "Alert" : "Watch";
+  document.querySelector("#rainMode").textContent = "Province summary";
+  document.querySelector("#rainToggle").textContent = "Province selected";
+  document.querySelector("#rainToggle").disabled = true;
+  document.querySelector("#routeToggle").hidden = true;
+  routeStatus.textContent = "Province summary from Smart city dashboard.";
+}
+
+function handleProvinceTarget(target) {
+  const path = target.closest?.("[data-province]");
+  if (!path) return false;
+  const index = Number(path.dataset.province);
+  showProvinceInfo(index, provinceData?.features?.[index] ? provinceName(provinceData.features[index], index) : "");
+  return true;
+}
+
+function showRouteAlert(item) {
+  leftPanel.hidden = false;
+  forecastBar.hidden = true;
+  activeSelection = { type: "routeAlert", id: item.title };
+  document.querySelector("#selectionType").textContent = "Route alert";
+  document.querySelector("#stationName").textContent = item.title;
+  document.querySelector("#stationStatus").textContent = item.status;
+  document.querySelector("#stationDetail").textContent = item.detail;
+  document.querySelector("#rainText").previousElementSibling.textContent = "Route";
+  document.querySelector("#rainText").textContent = item.routeText;
+  document.querySelector("#airText").textContent = item.weather;
+  document.querySelector("#riskText").textContent = item.level === "danger" ? "High" : item.level === "watch" ? "Watch" : "Clear";
+  document.querySelector("#rainMode").textContent = "Along selected route";
+  document.querySelector("#rainToggle").textContent = "Route warning";
+  document.querySelector("#rainToggle").disabled = true;
+  document.querySelector("#routeToggle").hidden = true;
+  routeStatus.textContent = "This warning belongs to the route you searched.";
+}
+
+function summarizeRoute(from, to, alerts) {
+  leftPanel.hidden = false;
+  forecastBar.hidden = true;
+  activeSelection = { type: "route", id: `${from.name}-${to.name}` };
+  document.querySelector("#selectionType").textContent = "Route alerts";
+  document.querySelector("#stationName").textContent = `${from.name} to ${to.name}`;
+  document.querySelector("#stationStatus").textContent = alerts.some(a => a.level === "danger") ? "High warning on this journey" : "Weather along the journey";
+  document.querySelector("#stationDetail").textContent = alerts.map(a => `${a.title}: ${a.detail}`).join(" ");
+  document.querySelector("#rainText").previousElementSibling.textContent = "Rain";
+  document.querySelector("#rainText").textContent = `${Math.max(from.rain, to.rain)} mm`;
+  document.querySelector("#airText").textContent = `${from.temp} to ${to.temp}`;
+  document.querySelector("#riskText").textContent = alerts.some(a => a.level === "danger") ? "High" : "Watch";
+  document.querySelector("#rainMode").textContent = "Route focused";
+  document.querySelector("#rainToggle").textContent = "Route alerts only";
+  document.querySelector("#rainToggle").disabled = true;
+  document.querySelector("#routeToggle").hidden = true;
+}
+
+function clearRouteSummary(from, to) {
+  leftPanel.hidden = true;
+  forecastBar.hidden = true;
+  activeSelection = { type: "route", id: `${from.name}-${to.name}` };
+  routeStatus.textContent = "Tap any route warning to see details.";
+}
+
 function setVisibility() {
   const s = stations[activeStation];
-  const mode = rainOverride === false || activeSelection.type === "hazard" || !layers.has("rain") ? "none" : rainMode(s.rainMm);
+  const mode = rainOverride === false || activeSelection.type !== "station" || activeFeature !== "weather" || !layers.has("rain") ? "none" : rainMode(s.rainMm);
   dashboard.dataset.rain = layers.has("rain") ? mode : "none";
   document.querySelector("#rainToggle").classList.toggle("primary", activeSelection.type === "station" && mode !== "none");
   if (activeSelection.type === "station") document.querySelector("#rainMode").textContent = mode === "none" ? "No rain lens" : rainLabel(mode);
@@ -456,14 +886,17 @@ function setVisibility() {
     b.classList.toggle("active", layers.has(b.dataset.layer));
   });
   document.querySelectorAll("[data-hazard]").forEach(el => { el.hidden = !layers.has(el.dataset.hazard); });
+  document.querySelectorAll("[data-river-alert]").forEach(el => { el.hidden = !riverActive; });
   document.querySelector(".flood-zone").hidden = !layers.has("flood");
   document.querySelector(".slide-zone").hidden = !layers.has("landslide");
   stationButtons.forEach(b => {
     const city = cityWeather[stationToCity[b.dataset.station]];
-    b.hidden = !(layers.has("rain") || activeFeature === "weather");
-    b.classList.toggle("weather-city", activeFeature === "weather");
+    const cityMode = activeFeature === "weather" && localWeatherLayer !== "rain";
+    b.hidden = !(layers.has("rain") || cityMode);
+    b.classList.toggle("weather-city", cityMode);
+    b.classList.toggle("rain-point", !cityMode && layers.has("rain"));
     b.classList.remove("air-good", "air-moderate", "air-poor");
-    if (activeFeature === "weather" && city) {
+    if (cityMode && city) {
       b.innerHTML = weatherDisplay === "air" ? `<b>${city.name}</b><small>AQI ${city.aqi} ${city.air}</small>` : `<b>${city.name}</b><small>${city.temp} C ${city.condition}</small>`;
       b.classList.add(city.aqi < 60 ? "air-good" : city.aqi < 110 ? "air-moderate" : "air-poor");
     } else {
@@ -473,10 +906,15 @@ function setVisibility() {
   });
   route.classList.toggle("active", routeActive);
   riverLine.classList.toggle("active", riverActive);
+  provinceLayer.classList.toggle("active", activeFeature === "city");
   dashboard.classList.toggle("satellite-mode", activeFeature === "trekking");
   if (activeFeature !== "city") document.querySelector("#cityPin").hidden = true;
   layerPanel.classList.toggle("weather-only", activeFeature === "weather");
-  layerPanel.classList.toggle("hazard-only", activeFeature === "hazard");
+  layerPanel.classList.toggle("hazard-only", activeFeature === "hazard" || activeFeature === "disaster");
+  layerPanel.classList.toggle("route-only", activeFeature === "route");
+  layerPanel.classList.toggle("city-only", activeFeature === "city");
+  layerPanel.classList.toggle("flood-only", activeFeature === "flood");
+  if (routeSearchCard) routeSearchCard.hidden = activeFeature !== "route";
 }
 
 function collectCoordinates(value) {
@@ -525,6 +963,23 @@ async function getGallimapsRoute(signal) {
   return coords.map(normalizeRoutePoint).filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng));
 }
 
+async function getGallimapsRouteBetween(origin, destination, signal) {
+  const params = new URLSearchParams({
+    mode: "driving",
+    srcLat: origin.lat,
+    srcLng: origin.lng,
+    dstLat: destination.lat,
+    dstLng: destination.lng,
+    accessToken: ACCESS_TOKEN
+  });
+  const response = await fetch(`${ROUTE_API}?${params.toString()}`, { signal });
+  if (!response.ok) throw new Error(`Route API ${response.status}`);
+  const data = await response.json();
+  const coords = collectCoordinates(data);
+  if (!coords || coords.length < 2) throw new Error("No route line found");
+  return coords.map(normalizeRoutePoint).filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng));
+}
+
 function nearestShelter(origin) {
   return shelters.reduce((best, shelter) => {
     const d = Math.hypot(origin.lat - shelter.lat, origin.lng - shelter.lng);
@@ -541,6 +996,80 @@ function fallbackRouteForStation() {
     { lat: (origin.lat * 0.34) + (destination.lat * 0.66), lng: (origin.lng * 0.38) + (destination.lng * 0.62) },
     { lat: destination.lat, lng: destination.lng }
   ];
+}
+
+function fallbackRouteBetween(fromKey, toKey) {
+  const direct = routeCorridors[`${fromKey}-${toKey}`];
+  if (direct) return direct;
+  const from = routeCities[fromKey], to = routeCities[toKey];
+  const points = [];
+  for (let i = 0; i <= 6; i++) {
+    const t = i / 6;
+    const bend = Math.sin(t * Math.PI) * 0.18;
+    points.push({
+      lat: from.lat + (to.lat - from.lat) * t + bend,
+      lng: from.lng + (to.lng - from.lng) * t
+    });
+  }
+  return points;
+}
+
+function routeAlertsFor(fromKey, toKey, points) {
+  const from = routeCities[fromKey], to = routeCities[toKey];
+  const mid = points[Math.floor(points.length / 2)] || from;
+  const alerts = [
+    {
+      lat: from.lat,
+      lng: from.lng,
+      level: from.rain >= 50 ? "danger" : from.rain >= 20 ? "watch" : "clear",
+      icon: from.rain >= 50 ? "!" : "i",
+      title: `${from.name} weather`,
+      status: from.weather,
+      detail: `${from.weather}, ${from.temp}, ${from.rain} mm rain near the start.`,
+      routeText: "Start",
+      weather: from.temp,
+      position: "above"
+    },
+    {
+      lat: mid.lat,
+      lng: mid.lng,
+      level: "watch",
+      icon: "!",
+      title: fromKey === "nepalgunj" && toKey === "pokhara" ? "Butwal landslide watch" : "Route weather watch",
+      status: fromKey === "nepalgunj" && toKey === "pokhara" ? "Wet slope warning" : "Rain may slow travel",
+      detail: fromKey === "nepalgunj" && toKey === "pokhara" ? "Wet hill road section on the way to Pokhara. Drive slowly and avoid night travel if rain increases." : "Rain is possible on the middle section of this route.",
+      routeText: "Mid route",
+      weather: "Rain watch",
+      position: "below"
+    },
+    {
+      lat: to.lat,
+      lng: to.lng,
+      level: to.rain >= 50 ? "danger" : to.rain >= 20 ? "watch" : "clear",
+      icon: to.rain >= 50 ? "!" : "i",
+      title: `${to.name} weather`,
+      status: to.weather,
+      detail: `${to.weather}, ${to.temp}, ${to.rain} mm rain near destination.`,
+      routeText: "Destination",
+      weather: to.temp,
+      position: "above"
+    }
+  ];
+  if (fromKey === "nepalgunj" && toKey === "pokhara") {
+    alerts.splice(2, 0, {
+      lat: 27.70,
+      lng: 83.4484,
+      level: "danger",
+      icon: "!",
+      title: "Tinau flood watch",
+      status: "River crossing warning",
+      detail: "Flood warning near the Butwal-Tinau section. Avoid low road edges and check river updates.",
+      routeText: "River section",
+      weather: "Heavy rain",
+      position: "above"
+    });
+  }
+  return alerts;
 }
 
 async function showRoute() {
@@ -573,6 +1102,46 @@ async function buildRouteForSelectedStation() {
     timer.done();
   }
   setVisibility(); render();
+}
+
+async function buildRouteAlertRoute() {
+  const fromKey = routeFrom.value;
+  const toKey = routeTo.value;
+  const from = routeCities[fromKey];
+  const to = routeCities[toKey];
+  if (!from || !to) return;
+  if (fromKey === toKey) {
+    routeSearchStatus.textContent = "Choose two different cities.";
+    return;
+  }
+  layers.clear();
+  riverActive = false;
+  routeActive = true;
+  routePoints = fallbackRouteBetween(fromKey, toKey);
+  activeRouteAlerts = routeAlertsFor(fromKey, toKey, routePoints);
+  state.centerLat = (from.lat + to.lat) / 2;
+  state.centerLng = (from.lng + to.lng) / 2;
+  state.z = Math.abs(from.lng - to.lng) > 2.2 ? 8 : 9;
+  clearRouteSummary(from, to);
+  routeSearchStatus.textContent = "Getting route line from GalliMaps...";
+  setVisibility();
+  render();
+  const timer = withTimeout(2600);
+  try {
+    const apiRoute = await getGallimapsRouteBetween(from, to, timer.controller.signal);
+    if (apiRoute.length > 1) routePoints = apiRoute;
+    activeRouteAlerts = routeAlertsFor(fromKey, toKey, routePoints);
+    routeSearchStatus.textContent = "GalliMaps route line loaded.";
+  } catch (error) {
+    routePoints = fallbackRouteBetween(fromKey, toKey);
+    activeRouteAlerts = routeAlertsFor(fromKey, toKey, routePoints);
+    routeSearchStatus.textContent = "Showing clean demo route if the API is unavailable locally.";
+  } finally {
+    timer.done();
+  }
+  clearRouteSummary(from, to);
+  setVisibility();
+  render();
 }
 
 async function getGallimapsDistance(origin, destination) {
@@ -621,6 +1190,7 @@ function updateForecast(key) {
   };
   document.querySelectorAll(".timeline button").forEach(b => b.classList.toggle("active", b.dataset.forecast === key));
   document.querySelector("#forecastPanel").innerHTML = stationForecasts[key].map(item => `<div><span>${item[0]}</span><b>${item[1]}</b><small>${item[2]}</small></div>`).join("");
+  render();
 }
 
 stationButtons.forEach(b => b.addEventListener("click", () => {
@@ -634,10 +1204,42 @@ stationButtons.forEach(b => b.addEventListener("click", () => {
 }));
 layerButtons.forEach(b => b.addEventListener("click", () => {
   if (b.id === "predictionToggle") { togglePrediction(); return; }
+  if (b.id === "heatmapDemoToggle") { openHeatmapDemo(); return; }
+  if (activeFeature === "weather" && b.dataset.layer === "rain") {
+    closeHeatmapDemo();
+    localWeatherLayer = "rain";
+    layers.clear();
+    layers.add("rain");
+    activeSelection = { type: "map", id: "rainStations" };
+    rainOverride = null;
+    leftPanel.hidden = true;
+    forecastBar.hidden = true;
+    stationButtons.forEach(button => button.classList.remove("active"));
+    setVisibility();
+    render();
+    return;
+  }
   if (b.dataset.layer === "hazards") {
     const allOn = hazardLayerNames.every(name => layers.has(name));
     hazardLayerNames.forEach(name => allOn ? layers.delete(name) : layers.add(name));
     if (!allOn) layers.add("hazards"); else layers.delete("hazards");
+    setVisibility();
+    return;
+  }
+  if ((activeFeature === "disaster" || activeFeature === "hazard") && hazardLayerNames.includes(b.dataset.layer)) {
+    const type = b.dataset.layer;
+    if (layers.has(type) && activeSelection.type === "hazard" && activeSelection.id === type) {
+      layers.delete(type);
+      layers.delete("hazards");
+      activeSelection = { type: "map", id: "disaster" };
+      leftPanel.hidden = true;
+      setVisibility();
+      render();
+      return;
+    }
+    layers.add(type);
+    if (hazardLayerNames.every(name => layers.has(name))) layers.add("hazards"); else layers.delete("hazards");
+    setHazardInfo(type);
     setVisibility();
     return;
   }
@@ -654,14 +1256,20 @@ hazardButtons.forEach(b => b.addEventListener("click", () => {
   setVisibility();
   reverseSelectedPoint();
 }));
+document.querySelectorAll("[data-river-alert]").forEach(b => b.addEventListener("click", () => setRiverInfo(b.dataset.riverAlert)));
 document.querySelector("#rainToggle").addEventListener("click", () => {
   if (activeSelection.type !== "station") return;
   rainOverride = dashboard.dataset.rain === "none";
   setVisibility();
 });
 document.querySelector("#routeToggle").addEventListener("click", showRoute);
+routeSearchCard.addEventListener("submit", e => {
+  e.preventDefault();
+  buildRouteAlertRoute();
+});
 document.querySelector("#weatherPill").addEventListener("click", () => document.querySelector("#weatherCard").classList.toggle("open"));
 document.querySelector("#closeWeather").addEventListener("click", () => document.querySelector("#weatherCard").classList.remove("open"));
+document.querySelector("#closeHeatmapDemo").addEventListener("click", closeHeatmapDemo);
 document.querySelectorAll(".timeline button").forEach(b => b.addEventListener("click", () => updateForecast(b.dataset.forecast)));
 document.querySelectorAll("[data-month]").forEach(b => b.addEventListener("click", () => {
   document.querySelectorAll("[data-month]").forEach(x => x.classList.toggle("active", x === b));
@@ -669,10 +1277,108 @@ document.querySelectorAll("[data-month]").forEach(b => b.addEventListener("click
   document.querySelector("#predictionMonth").textContent = month === "july" ? "July" : "August";
   document.querySelector("#predictionMap").src = month === "july" ? "assets/predicted-rainfall-july.png" : "assets/predicted-rainfall-august.png";
 }));
+predictionViewButtons.forEach(b => b.addEventListener("click", () => setPredictionView(b.dataset.predictionView)));
+provinceLayer.addEventListener("click", e => handleProvinceTarget(e.target));
+document.querySelector("#closeSmartDetail").addEventListener("click", hideSmartDetail);
+document.querySelectorAll("[data-pred-day]").forEach(button => button.addEventListener("click", () => updatePredictionTimeline({ day: button.dataset.predDay })));
+document.querySelectorAll(".play-time").forEach(button => button.addEventListener("click", () => {
+  updatePredictionTimeline({ time: button.dataset.time });
+}));
 function togglePrediction() {
+  openPredictionPanel("month");
+}
+
+function setPredictionView(view) {
+  const weekly = document.querySelector("#weeklyPrediction");
+  const monthly = document.querySelector("#monthlyPrediction");
+  const monthButtons = document.querySelector(".month-buttons");
+  const isMonth = view === "month";
+  weekly.hidden = isMonth;
+  monthly.hidden = !isMonth;
+  monthButtons.hidden = !isMonth;
+  document.querySelector("#predictionMonth").textContent = isMonth ? document.querySelector("[data-month].active")?.textContent || "July" : "Weekly";
+  predictionViewButtons.forEach(b => b.classList.toggle("active", b.dataset.predictionView === view));
+}
+
+function openPredictionPanel(view = "week") {
   const panel = document.querySelector("#predictionPanel");
-  panel.classList.toggle("collapsed");
-  document.querySelector("#predictionToggle").classList.toggle("active", !panel.classList.contains("collapsed"));
+  panel.classList.remove("collapsed");
+  setPredictionView(view);
+}
+
+function closePredictionPanel() {
+  document.querySelector("#predictionPanel").classList.add("collapsed");
+  document.querySelector("#predictionToggle").classList.remove("active");
+}
+
+function openHeatmapDemo() {
+  if (!heatmapDemoPanel) return;
+  heatmapDemoPanel.classList.remove("collapsed");
+  document.querySelector("#heatmapDemoToggle").classList.add("active");
+}
+
+function closeHeatmapDemo() {
+  if (!heatmapDemoPanel) return;
+  heatmapDemoPanel.classList.add("collapsed");
+  document.querySelector("#heatmapDemoToggle")?.classList.remove("active");
+}
+
+function openPredictionMapUi() {
+  if (predictionMapUi) predictionMapUi.hidden = false;
+  if (predictionRainOverlay) predictionRainOverlay.hidden = false;
+}
+
+function closePredictionMapUi() {
+  if (predictionMapUi) predictionMapUi.hidden = true;
+  if (predictionRainOverlay) predictionRainOverlay.hidden = true;
+}
+
+function predictionLabelForDay(day) {
+  const labels = {
+    fri12: "Fri 12 Jun",
+    sat13: "Sat 13 Jun",
+    sun14: "Today",
+    mon15: "Mon 15 Jun",
+    tue16: "Tue 16 Jun",
+    wed17: "Wed 17 Jun",
+    thu18: "Thu 18 Jun",
+    fri19: "Fri 19 Jun"
+  };
+  return labels[day] || "Today";
+}
+
+function updatePredictionTimeline({ day = activePredictionDay, time = activePredictionTime } = {}) {
+  if (day === "month") {
+    document.querySelectorAll("[data-pred-day]").forEach(item => item.classList.toggle("active", item.dataset.predDay === "month"));
+    openPredictionPanel("month");
+    return;
+  }
+  activePredictionDay = day;
+  activePredictionTime = time;
+  closePredictionPanel();
+  document.querySelectorAll("[data-pred-day]").forEach(item => item.classList.toggle("active", item.dataset.predDay === activePredictionDay));
+  document.querySelectorAll(".play-time").forEach(item => item.classList.toggle("active", item.dataset.time === activePredictionTime));
+  document.querySelector("#predictionTime").textContent = activePredictionTime;
+  document.querySelector(".prediction-time-badge span").textContent = `${predictionLabelForDay(activePredictionDay)} forecast`;
+  render();
+}
+
+async function loadProvinceMap() {
+  if (provinceData || provinceLoading) {
+    render();
+    return;
+  }
+  provinceLoading = true;
+  try {
+    const response = await fetch("assets/province.geojson");
+    if (!response.ok) throw new Error("province map failed");
+    provinceData = await response.json();
+  } catch (error) {
+    provinceData = { features: [] };
+  } finally {
+    provinceLoading = false;
+    render();
+  }
 }
 
 function setFeature(id) {
@@ -682,14 +1388,18 @@ function setFeature(id) {
   layerPanel.hidden = false;
   riverActive = false;
   if (id !== "route" && id !== "trekking") routeActive = false;
+  if (id !== "prediction") closePredictionPanel();
+  if (id !== "prediction") closePredictionMapUi();
+  if (id !== "city") hideSmartDetail();
+  if (id !== "weather") closeHeatmapDemo();
   featureButtons.forEach(b => b.classList.toggle("active", b.dataset.feature === id));
   if (id === "weather") setWeatherMode();
-  else if (id === "hazard") setHazardMode();
   else if (id === "route") setRouteWeatherMode();
-  else if (id === "trekking") setTrekkingMode();
+  else if (id === "disaster") setHazardMode();
   else if (id === "flood") setFloodMode();
-  else if (id === "alerts") setAlertsMode();
   else if (id === "city") setSmartCityMode();
+  else if (id === "prediction") setPredictionMode();
+  else if (id === "landslide") setLandslideMode();
   setVisibility();
   render();
 }
@@ -700,8 +1410,9 @@ function setMenuTitle(label) {
 }
 
 function setWeatherMode() {
-  setMenuTitle("Live weather");
+  setMenuTitle("Local weather");
   layers.clear();
+  localWeatherLayer = weatherDisplay;
   state.centerLat = 28.15;
   state.centerLng = 84.25;
   state.z = 7;
@@ -711,29 +1422,46 @@ function setWeatherMode() {
 }
 
 function setHazardMode() {
-  setMenuTitle("Hazard map");
+  setMenuTitle("Disaster alert");
   layers.clear();
-  hazardLayerNames.concat(["thunderstorm", "heavyRain"]).forEach(name => layers.add(name));
+  hazardLayerNames.forEach(name => layers.add(name));
   layers.add("hazards");
+  riverActive = false;
+  routeActive = false;
+  activeRouteAlerts = [];
   state.centerLat = 28.15;
   state.centerLng = 84.25;
   state.z = 7;
-  setHazardInfo("landslide");
+  activeSelection = { type: "map", id: "disaster" };
+  leftPanel.hidden = true;
+  forecastBar.hidden = true;
+  routeStatus.textContent = "";
 }
 
 function setRouteWeatherMode() {
-  setMenuTitle("Route weather");
+  setMenuTitle("Route alerts");
   layers.clear();
-  layers.add("rain");
-  routeActive = true;
-  routePoints = pokharaKathmanduRoute;
-  state.centerLat = 27.96;
-  state.centerLng = 84.64;
-  state.z = 9;
-  document.querySelector("#stationName").textContent = "Pokhara to Kathmandu";
-  document.querySelector("#stationStatus").textContent = "Route weather";
-  document.querySelector("#stationDetail").textContent = `Stops: ${routeWeatherPoints.map(p => `${p.name} ${p.temp}, rain ${p.rain}`).join("; ")}.`;
-  routeStatus.textContent = "Route weather shows rain and temperature along Pokhara to Kathmandu.";
+  activeRouteAlerts = [];
+  routeActive = false;
+  routeFrom.value = "nepalgunj";
+  routeTo.value = "pokhara";
+  routePoints = [];
+  routeSearchStatus.textContent = "Choose a route and check weather before travel.";
+  leftPanel.hidden = true;
+  forecastBar.hidden = true;
+  activeSelection = { type: "map", id: "routeSearch" };
+  routeStatus.textContent = "";
+}
+
+function setLandslideMode() {
+  setMenuTitle("Landslide risk");
+  layers.clear();
+  layers.add("landslide");
+  activeFeature = "hazard";
+  state.centerLat = 28.2096;
+  state.centerLng = 83.9856;
+  state.z = 11;
+  setHazardInfo("landslide");
 }
 
 function setTrekkingMode() {
@@ -751,14 +1479,18 @@ function setTrekkingMode() {
 }
 
 function setFloodMode() {
-  setMenuTitle("Flood alert");
+  setMenuTitle("Flood alert map");
   layers.clear();
-  layers.add("flood");
   riverActive = true;
-  state.centerLat = 27.675;
-  state.centerLng = 85.43;
-  state.z = 13;
-  setHazardInfo("flood");
+  routeActive = false;
+  activeRouteAlerts = [];
+  state.centerLat = 28.1;
+  state.centerLng = 83.35;
+  state.z = 7;
+  activeSelection = { type: "riverMap", id: "flood" };
+  leftPanel.hidden = true;
+  forecastBar.hidden = true;
+  routeStatus.textContent = "";
 }
 
 function setAlertsMode() {
@@ -772,19 +1504,38 @@ function setAlertsMode() {
 function setSmartCityMode() {
   setMenuTitle("Smart city");
   layers.clear();
-  layers.add("rain");
-  layers.add("flood");
-  riverActive = true;
-  const pin = document.querySelector("#cityPin");
-  pin.hidden = false;
-  pin.dataset.lat = 27.7172;
-  pin.dataset.lng = 85.324;
-  state.centerLat = 27.7172;
-  state.centerLng = 85.324;
-  state.z = 13;
-  document.querySelector("#stationName").textContent = "Kathmandu pinned location";
-  document.querySelector("#stationStatus").textContent = "Smart city dashboard";
-  document.querySelector("#stationDetail").textContent = "Current weather 24 C, rainfall 18 mm, air quality moderate, Hanumante river alert nearby.";
+  riverActive = false;
+  routeActive = false;
+  activeRouteAlerts = [];
+  document.querySelector("#cityPin").hidden = true;
+  state.centerLat = 28.25;
+  state.centerLng = 84.2;
+  state.z = 7;
+  activeSelection = { type: "map", id: "city" };
+  leftPanel.hidden = true;
+  hideSmartDetail();
+  forecastBar.hidden = true;
+  routeStatus.textContent = "";
+  loadProvinceMap();
+}
+
+function setPredictionMode() {
+  setMenuTitle("Rainfall prediction");
+  layerPanel.hidden = true;
+  layers.clear();
+  riverActive = false;
+  routeActive = false;
+  activeRouteAlerts = [];
+  document.querySelector("#cityPin").hidden = true;
+  state.centerLat = 28.15;
+  state.centerLng = 84.25;
+  state.z = 7;
+  activeSelection = { type: "map", id: "prediction" };
+  leftPanel.hidden = true;
+  forecastBar.hidden = true;
+  routeStatus.textContent = "";
+  closePredictionPanel();
+  openPredictionMapUi();
 }
 
 async function runPlaceSearch(query) {
@@ -885,17 +1636,8 @@ document.querySelector("#placeSearch").addEventListener("submit", async e => {
 });
 
 map.addEventListener("pointerdown", e => {
-  if (e.target.closest("button,.left-panel,.layer-panel,.prediction-panel,.forecast-bar,.weather-pill,.weather-card,.map-tools,.topbar")) return;
+  if (e.target.closest("button,.left-panel,.layer-panel,.prediction-panel,.prediction-map-ui,.smart-detail-panel,.forecast-bar,.weather-pill,.weather-card,.map-tools,.topbar,.province-layer")) return;
   if (activeFeature === "city") {
-    const point = screenLL(e.clientX, e.clientY);
-    const pin = document.querySelector("#cityPin");
-    pin.hidden = false;
-    pin.dataset.lat = point.lat;
-    pin.dataset.lng = point.lng;
-    document.querySelector("#stationName").textContent = "Pinned smart city point";
-    document.querySelector("#stationStatus").textContent = `${point.lat.toFixed(3)}, ${point.lng.toFixed(3)}`;
-    document.querySelector("#stationDetail").textContent = "Smart city view for this map point: current weather 24 C, local rainfall 18 mm, moderate air quality, nearest river watch.";
-    render();
     return;
   }
   state.dragging = true; state.startX = e.clientX; state.startY = e.clientY; state.origin = llp(state.centerLat, state.centerLng, state.z);
@@ -917,18 +1659,32 @@ document.querySelector("#locate").addEventListener("click", () => { const s = st
 document.querySelector("#reset").addEventListener("click", () => { state.centerLat = 28.15; state.centerLng = 84.25; state.z = 7; render(); });
 window.addEventListener("resize", render);
 document.querySelector("#weatherView").addEventListener("click", () => {
+  closeHeatmapDemo();
   weatherDisplay = "weather";
+  localWeatherLayer = "weather";
+  layers.clear();
   document.querySelector("#weatherView").classList.add("active");
   document.querySelector("#airView").classList.remove("active");
-  if (activeFeature === "weather") setStation(activeStation);
+  if (activeFeature === "weather") {
+    activeSelection = { type: "map", id: "weather" };
+    leftPanel.hidden = true;
+    forecastBar.hidden = true;
+  }
   setVisibility();
   render();
 });
 document.querySelector("#airView").addEventListener("click", () => {
+  closeHeatmapDemo();
   weatherDisplay = "air";
+  localWeatherLayer = "air";
+  layers.clear();
   document.querySelector("#airView").classList.add("active");
   document.querySelector("#weatherView").classList.remove("active");
-  if (activeFeature === "weather") setStation(activeStation);
+  if (activeFeature === "weather") {
+    activeSelection = { type: "map", id: "air" };
+    leftPanel.hidden = true;
+    forecastBar.hidden = true;
+  }
   setVisibility();
   render();
 });

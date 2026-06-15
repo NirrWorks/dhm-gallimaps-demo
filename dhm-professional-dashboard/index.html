@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>DHM Rain and Hazard Dashboard</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=heatmap-demo">
   </head>
   <body>
     <main class="dashboard" data-rain="none">
@@ -15,10 +15,14 @@
           <div class="zone slide-zone" data-hazard="landslide" data-lat="28.2096" data-lng="83.9856">Landslide area</div>
           <div class="route" id="routeLine"></div>
           <div class="river-line" id="riverLine"></div>
+          <svg class="province-layer" id="provinceLayer" aria-label="Province alert map"></svg>
           <div class="city-pin" id="cityPin" hidden></div>
-          <div class="river-alert" data-hazard="flood" data-lat="27.6758" data-lng="85.4295">
+          <button class="river-alert" data-river-alert="hanumante" data-lat="27.6758" data-lng="85.4295">
             <b>!</b><span>Hanumante Khola<br>Red alert</span>
-          </div>
+          </button>
+          <button class="river-alert" data-river-alert="karnali" data-lat="28.755" data-lng="81.285">
+            <b>!</b><span>Karnali River<br>Warning</span>
+          </button>
 
           <button class="station danger active" data-station="bhaktapur">82</button>
           <button class="station heavy" data-station="nepalgunj">67</button>
@@ -57,6 +61,56 @@
           <i style="--x:51%;--d:.91s"></i><i style="--x:59%;--d:.38s"></i><i style="--x:67%;--d:.82s"></i>
           <i style="--x:75%;--d:.28s"></i><i style="--x:84%;--d:.68s"></i><i style="--x:93%;--d:.18s"></i>
         </div>
+        <div class="prediction-rain-overlay" id="predictionRainOverlay" hidden aria-hidden="true">
+          <span class="rain-patch low" data-pred-rain="0"></span>
+          <span class="rain-patch mid" data-pred-rain="1"></span>
+          <span class="rain-patch high" data-pred-rain="2"></span>
+          <span class="rain-patch mid" data-pred-rain="3"></span>
+          <span class="rain-patch low" data-pred-rain="4"></span>
+        </div>
+        <section class="prediction-map-ui" id="predictionMapUi" hidden aria-label="Rainfall forecast timeline">
+          <div class="prediction-layer-chip">
+            <span>Weather layer</span>
+            <b>Rainfall (mm/hour)</b>
+          </div>
+          <div class="prediction-time-badge"><b id="predictionTime">8:45 PM</b><span>Forecast</span></div>
+          <div class="prediction-scale">
+            <b>mm/hour</b>
+            <span><i class="scale-red"></i>&gt;32</span>
+            <span><i class="scale-orange"></i>16-32</span>
+            <span><i class="scale-yellow"></i>8-16</span>
+            <span><i class="scale-green"></i>2-8</span>
+            <span><i class="scale-blue"></i>0.5-2</span>
+          </div>
+          <div class="rain-timeline" id="rainTimeline">
+            <div class="timeline-days">
+              <button type="button" data-pred-day="fri12">Fri 12 Jun</button>
+              <button type="button" data-pred-day="sat13">Sat 13 Jun</button>
+              <button type="button" class="today active" data-pred-day="sun14">Today<br>Sun 14 Jun</button>
+              <button type="button" data-pred-day="mon15">Mon 15 Jun</button>
+              <button type="button" data-pred-day="tue16">Tue 16 Jun</button>
+              <button type="button" data-pred-day="wed17">Wed 17 Jun</button>
+              <button type="button" data-pred-day="thu18">Thu 18 Jun</button>
+              <button type="button" data-pred-day="fri19">Fri 19 Jun</button>
+              <button type="button" class="next-month" data-pred-day="month">Next month<br>Jul / Aug</button>
+            </div>
+            <div class="timeline-hours">
+              <button class="play-time active" data-time="20:45">20:45</button>
+              <button class="play-time" data-time="21:00">21:00</button>
+              <button class="play-time" data-time="21:15">21:15</button>
+              <button class="play-time" data-time="21:30">21:30</button>
+              <button class="play-time" data-time="21:45">21:45</button>
+              <button class="play-time" data-time="22:00">22:00</button>
+              <button class="play-time" data-time="22:15">22:15</button>
+              <button class="play-time" data-time="22:30">22:30</button>
+              <button class="play-time" data-time="22:45">22:45</button>
+              <button class="play-time" data-time="23:00">23:00</button>
+              <button class="play-time" data-time="23:15">23:15</button>
+              <button class="play-time" data-time="23:30">23:30</button>
+              <button class="play-time" data-time="23:45">23:45</button>
+            </div>
+          </div>
+        </section>
       </div>
 
       <header class="topbar" hidden>
@@ -102,6 +156,37 @@
         </div>
       </aside>
 
+      <aside class="smart-detail-panel" id="smartDetailPanel" hidden>
+        <div class="smart-office-head">
+          <span>Province forecast office</span>
+          <button id="closeSmartDetail" type="button">Close</button>
+        </div>
+        <h2 id="smartProvinceTitle">Bagmati Province</h2>
+        <div class="smart-tabs">
+          <b>Current weather</b>
+          <b>Rainfall</b>
+          <b>Rivers</b>
+          <b>Public alerts</b>
+        </div>
+        <div class="smart-brief">
+          <div>
+            <span id="smartCondition">Partly cloudy</span>
+            <strong id="smartTemp">24 C</strong>
+            <small id="smartRain">Rainfall: 82 mm</small>
+          </div>
+          <article>
+            <b id="smartHeadline">Heavy rain pockets this week</b>
+            <p id="smartSummary">Province summary will appear after selecting a province.</p>
+          </article>
+        </div>
+        <div class="smart-grid">
+          <article><span>Today</span><b id="smartToday">Rain likely</b><small id="smartTodayNote">Local river watch</small></article>
+          <article><span>Tomorrow</span><b id="smartTomorrow">Cloudy</b><small>Some rain possible</small></article>
+          <article><span>7 days</span><b id="smartWeek">More rain</b><small>Prepare local offices</small></article>
+        </div>
+        <div class="smart-table" id="smartTable"></div>
+      </aside>
+
       <aside class="layer-panel" hidden>
         <div class="panel-title"><span>Map menu</span><b>Hazard map</b></div>
         <div class="weather-switch">
@@ -119,15 +204,72 @@
           <button class="layer" data-layer="shelter">Shelter</button>
         </div>
         <button class="layer" data-layer="rain">Rain stations</button>
+        <button class="layer" id="heatmapDemoToggle">Heatmap demo</button>
         <button class="layer" data-layer="publicAlerts">Public alerts</button>
         <button class="layer" id="predictionToggle">Rainfall prediction</button>
+        <form class="route-search-card" id="routeSearchCard" hidden>
+          <label>From
+            <select id="routeFrom">
+              <option value="nepalgunj">Nepalgunj</option>
+              <option value="pokhara">Pokhara</option>
+              <option value="kathmandu">Kathmandu</option>
+              <option value="butwal">Butwal</option>
+              <option value="chitwan">Chitwan</option>
+              <option value="biratnagar">Biratnagar</option>
+              <option value="dhangadhi">Dhangadhi</option>
+            </select>
+          </label>
+          <label>To
+            <select id="routeTo">
+              <option value="pokhara">Pokhara</option>
+              <option value="kathmandu">Kathmandu</option>
+              <option value="nepalgunj">Nepalgunj</option>
+              <option value="butwal">Butwal</option>
+              <option value="chitwan">Chitwan</option>
+              <option value="biratnagar">Biratnagar</option>
+              <option value="dhangadhi">Dhangadhi</option>
+            </select>
+          </label>
+          <button type="submit">Check route</button>
+          <small id="routeSearchStatus">Shows weather and hazards only along this route.</small>
+        </form>
+        <div class="flood-map-card">
+          <b>River level map</b>
+          <span>Click a river warning label to see details.</span>
+          <p><i class="normal-key"></i> Normal <i class="watch-key"></i> Watch <i class="alert-key"></i> Warning <i class="danger-key"></i> Red alert</p>
+        </div>
+        <div class="smart-city-card">
+          <b>Province dashboard</b>
+          <span>Click any province to view weather, rainfall, river status and public alert summary.</span>
+        </div>
         <div class="api-note" id="apiNote">Search, route, distance and reverse geocoding use GalliMaps APIs.</div>
       </aside>
 
+      <aside class="heatmap-demo-panel collapsed" id="heatmapDemoPanel">
+        <div class="panel-title"><span>Heatmap demo</span><button id="closeHeatmapDemo" type="button">Close</button></div>
+        <img src="assets/heatmap-demo.png" alt="Nepal heatmap demo">
+      </aside>
+
       <aside class="prediction-panel collapsed" id="predictionPanel">
-        <div class="panel-title"><span>Rainfall prediction</span><b id="predictionMonth">July</b></div>
-        <img id="predictionMap" src="assets/predicted-rainfall-july.png" alt="Predicted rainfall map">
-        <p id="predictionText">Darker blue means more rain. This helps DHM see where the month may be wetter.</p>
+        <div class="panel-title"><span>Rainfall prediction</span><b id="predictionMonth">Weekly</b></div>
+        <div class="prediction-tabs">
+          <button class="active" data-prediction-view="week">Weekly forecast</button>
+          <button data-prediction-view="month">Next month</button>
+        </div>
+        <div class="weekly-prediction" id="weeklyPrediction">
+          <div class="radar-map">
+            <span class="rain-cell low" style="--x:18%;--y:38%">Mon</span>
+            <span class="rain-cell mid" style="--x:42%;--y:50%">Wed</span>
+            <span class="rain-cell high" style="--x:62%;--y:42%">Fri</span>
+            <span class="rain-cell mid" style="--x:78%;--y:58%">Sun</span>
+          </div>
+          <p>Weekly rainfall forecast: colored areas show where rain may be light, moderate or heavy during the next 7 days.</p>
+          <div class="rain-legend"><i class="low"></i> Light <i class="mid"></i> Moderate <i class="high"></i> Heavy</div>
+        </div>
+        <div class="monthly-prediction" id="monthlyPrediction" hidden>
+          <img id="predictionMap" src="assets/predicted-rainfall-july.png" alt="Predicted rainfall map">
+          <p id="predictionText">Darker blue means more rain. This helps DHM see where the month may be wetter.</p>
+        </div>
         <div class="month-buttons">
           <button class="active" data-month="july">July</button>
           <button data-month="august">August</button>
@@ -149,19 +291,18 @@
       </section>
 
       <section class="feature-dock" aria-label="DHM GalliMaps features">
-        <button class="feature" data-feature="weather"><span>1</span><b>Live weather</b></button>
-        <button class="feature" data-feature="hazard"><span>2</span><b>Hazard map</b></button>
-        <button class="feature" data-feature="route"><span>3</span><b>Route weather</b></button>
-        <button class="feature" data-feature="trekking"><span>4</span><b>Trekking</b></button>
-        <button class="feature" data-feature="flood"><span>5</span><b>Flood alert</b></button>
-        <button class="feature" data-feature="alerts"><span>6</span><b>Public alerts</b></button>
-        <button class="feature" data-feature="city"><span>7</span><b>Smart city</b></button>
+        <button class="feature" data-feature="weather"><span>1</span><b>Local weather</b></button>
+        <button class="feature" data-feature="route"><span>2</span><b>Route alerts</b></button>
+        <button class="feature" data-feature="disaster"><span>3</span><b>Disaster alert</b></button>
+        <button class="feature" data-feature="flood"><span>4</span><b>Flood alert map</b></button>
+        <button class="feature" data-feature="city"><span>5</span><b>Smart city</b></button>
+        <button class="feature" data-feature="prediction"><span>6</span><b>Rainfall prediction</b></button>
       </section>
 
       <div class="map-tools">
         <button id="zoomIn">+</button><button id="zoomOut">-</button><button id="locate">Find</button><button id="reset">Reset</button>
       </div>
     </main>
-    <script src="script.js"></script>
+    <script src="script.js?v=heatmap-demo"></script>
   </body>
 </html>
